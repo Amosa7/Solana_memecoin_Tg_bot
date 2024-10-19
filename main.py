@@ -68,7 +68,7 @@ async def start_auto_notifications(update: Update, context: ContextTypes.DEFAULT
 
     # Set up a job to periodically check for updates (every 1 minutes)
     job_queue: JobQueue = context.job_queue
-    job_queue.run_repeating(notify_boosted_tokens, interval=1, first=10, chat_id=chat_id)
+    job_queue.run_repeating(notify_boosted_tokens, interval=30, first=10, chat_id=chat_id)
 
     await update.message.reply_text("You will receive automatic notifications on boosted Solana meme coins!")
 
