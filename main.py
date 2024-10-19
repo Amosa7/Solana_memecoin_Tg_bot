@@ -4,7 +4,7 @@ from telegram import Update
 from telegram.ext import Application, CommandHandler, ContextTypes, JobQueue
 
 # Telegram bot credentials
-TOKEN: Final = 'your-secure-bot-token'
+TOKEN: Final = '7407316205:AAHBkBw_LlyWgM6IBmZUOvOXqHgIzMV7fGI'
 BOT_USERNAME: Final = '@Gygnusdon_bot'
 
 # Dexscreener API endpoint
