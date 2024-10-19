@@ -4,20 +4,14 @@ from telegram import Update
 from telegram.ext import Application, CommandHandler, ContextTypes, JobQueue
 
 # Telegram bot credentials
-TOKEN: Final = '7407316205:AAHBkBw_LlyWgM6IBmZUOvOXqHgIzMV7fGI'
+TOKEN: Final = 'your-secure-bot-token'
 BOT_USERNAME: Final = '@Gygnusdon_bot'
 
-# DexScreener API endpoint
-DEX_API_URL = 'https://api.dexscreener.com/token-boosts/latest/v1'
+# Dexscreener API endpoint
+DEX_API_URL = "https://api.dexscreener.com/token-boosts/latest/v1"
 
-# Initialize global variable to store previously notified tokens
-previous_tokens = []
-
-
-# Start command
-async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text('Hello! I will notify you about boosted Solana meme coins automatically.')
-
+# Global variable to store the previously notified tokens
+previous_tokens = set()  # Use a set for faster lookups
 
 # Function to fetch boosted tokens from DexScreener
 def fetch_boosted_tokens():
@@ -29,22 +23,21 @@ def fetch_boosted_tokens():
         print(f"Error fetching tokens: {e}")
         return None
 
-
 # Function to filter and send notifications for new boosted Solana meme coins
 async def notify_boosted_tokens(context: ContextTypes.DEFAULT_TYPE):
     global previous_tokens
 
     data = fetch_boosted_tokens()
-
+    
     if data:
         solana_meme_coins = [
-            token for token in data
+            token for token in data 
             if token.get('chainId') == 'solana' and 'meme' in token.get('description', '').lower()
         ]
 
         # Check for new tokens that haven't been notified yet
         new_tokens = [token for token in solana_meme_coins if token['tokenAddress'] not in previous_tokens]
-
+        
         # If there are new Solana meme coins boosted, send alerts
         if new_tokens:
             for coin in new_tokens:
@@ -59,19 +52,21 @@ async def notify_boosted_tokens(context: ContextTypes.DEFAULT_TYPE):
                 await context.bot.send_message(chat_id=context.job.chat_id, text=message)
 
             # Update the list of previously notified tokens
-            previous_tokens = [token['tokenAddress'] for token in solana_meme_coins]
-
+            previous_tokens.update(token['tokenAddress'] for token in new_tokens)
 
 # Function to start the automatic notification job
 async def start_auto_notifications(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.effective_chat.id
 
-    # Set up a job to periodically check for updates (every 1 minutes)
+    # Set up a job to periodically check for updates (every 5 minutes)
     job_queue: JobQueue = context.job_queue
-    job_queue.run_repeating(notify_boosted_tokens, interval=30, first=10, chat_id=chat_id)
+    job_queue.run_repeating(notify_boosted_tokens, interval=300, first=10, chat_id=chat_id)
 
     await update.message.reply_text("You will receive automatic notifications on boosted Solana meme coins!")
 
+# Simple start command handler
+async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text("Welcome! Use /auto to start receiving notifications about Solana meme coins.")
 
 # Main function to run the bot
 def main():
@@ -85,7 +80,6 @@ def main():
     # Run the bot
     print("Bot is running...")
     application.run_polling()
-
 
 if __name__ == "__main__":
     main()
