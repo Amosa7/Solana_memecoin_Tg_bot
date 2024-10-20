@@ -7,8 +7,8 @@ from telegram.ext import Application, CommandHandler, ContextTypes, JobQueue
 TOKEN: Final = '7407316205:AAHBkBw_LlyWgM6IBmZUOvOXqHgIzMV7fGI'
 BOT_USERNAME: Final = '@Gygnusdon_bot'
 
-# DexScreener API endpoint
-DEX_API_URL = "https://api.dexscreener.com/token-profiles/latest/v1"
+# DexScreener API endpoint for boosted tokens
+DEX_API_URL = "https://api.dexscreener.com/token-boosts/latest/v1"
 
 # Global variable to store the previously notified tokens
 previous_tokens = set()
@@ -30,17 +30,16 @@ async def notify_boosted_tokens(context: ContextTypes.DEFAULT_TYPE):
     data = fetch_boosted_tokens()
     
     if data:
-        # No filtering, notify all tokens
+        # No filtering, notify all tokens that haven't been notified yet
         new_tokens = [token for token in data if token['tokenAddress'] not in previous_tokens]
         
         if new_tokens:
             for token in new_tokens:
-                # Assuming the fields 'amountBoosted' and 'totalBoosted' exist in the API response
                 message = (
                     f"🚀 New Token Boosted! 🚀\n\n"
                     f"Description: {token.get('description', 'Unknown')}\n"
-                    f"Amount Boosted: {token.get('amountBoosted', 'N/A')}\n"
-                    f"Total Boosted: {token.get('totalBoosted', 'N/A')}\n"
+                    f"Amount Boosted: {token.get('amount', 'N/A')}\n"
+                    f"Total Boosted: {token.get('totalAmount', 'N/A')}\n"
                     f"More info: {token.get('url', 'No link available')}"
                 )
                 await context.bot.send_message(chat_id=context.job.chat_id, text=message)
