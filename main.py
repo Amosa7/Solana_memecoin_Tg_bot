@@ -7,7 +7,7 @@ from telegram.ext import Application, CommandHandler, ContextTypes, JobQueue
 TOKEN: Final = '7407316205:AAHBkBw_LlyWgM6IBmZUOvOXqHgIzMV7fGI'
 BOT_USERNAME: Final = '@Gygnusdon_bot'
 
-# Dexscreener API endpoint
+# DexScreener API endpoint
 DEX_API_URL = "https://api.dexscreener.com/token-profiles/latest/v1"
 
 # Global variable to store the previously notified tokens
@@ -35,11 +35,12 @@ async def notify_boosted_tokens(context: ContextTypes.DEFAULT_TYPE):
         
         if new_tokens:
             for token in new_tokens:
+                # Assuming the fields 'amountBoosted' and 'totalBoosted' exist in the API response
                 message = (
                     f"🚀 New Token Boosted! 🚀\n\n"
-                    f"Name: {token.get('description', 'Unknown')}\n"
-                    f"Amount Boosted: {coin.get('amount', 'N/A')}\n"
-                    f"Total Boost: {coin.get('totalAmount', 'N/A')}\n"
+                    f"Description: {token.get('description', 'Unknown')}\n"
+                    f"Amount Boosted: {token.get('amountBoosted', 'N/A')}\n"
+                    f"Total Boosted: {token.get('totalBoosted', 'N/A')}\n"
                     f"More info: {token.get('url', 'No link available')}"
                 )
                 await context.bot.send_message(chat_id=context.job.chat_id, text=message)
@@ -54,10 +55,18 @@ async def start_auto_notifications(update: Update, context: ContextTypes.DEFAULT
     job_queue.run_repeating(notify_boosted_tokens, interval=30, first=10, chat_id=chat_id)
     await update.message.reply_text("You will receive automatic notifications on boosted tokens!")
 
+# Command to start the bot and display a welcome message
+async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text("Welcome! Use /auto to start receiving token boost notifications.")
+
 # Main function to run the bot
 def main():
     application = Application.builder().token(TOKEN).build()
-    application.add_handler(CommandHandler("start", start_auto_notifications))
+    
+    # Register the command handlers
+    application.add_handler(CommandHandler("start", start_command))  # Handles /start command
+    application.add_handler(CommandHandler("auto", start_auto_notifications))  # Handles /auto command
+    
     print("Bot is running...")
     application.run_polling()
 
